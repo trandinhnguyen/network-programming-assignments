@@ -1,7 +1,19 @@
 **/[Tt]est*
-*.jpg
-*.png
-*.mp4
+# *.jpg
+# *.png
+# *.mp4
+
+*.zip
+
+img/**/*.txt
+
+assignments/**/*.jpg
+assignments/**/*.png
+assignments/**/*.mp4
+
+in_class/**/*.jpg
+in_class/**/*.png
+in_class/**/*.mp4
 
 # Prerequisites
 *.d
