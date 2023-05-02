@@ -34,7 +34,6 @@ int str_to_uint16(char *str, uint16_t *port)
     return 1;
 }
 
-
 // Lấy thời gian hiện tại
 char *getTimeString()
 {
@@ -45,8 +44,9 @@ char *getTimeString()
     struct tm tm = *localtime(&t);
 
     // Format chuỗi thời gian
-    char *str;
-    snprintf(str, 20, "%d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    static char str[24];
+    sprintf(str, "%d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
     return str;
 }
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
     // Chuẩn bị tin nhắn nhận từ client
     char msg[BUFF_SIZE];
-    char *time;
+    char time[24];
     char result[2 * BUFF_SIZE];
 
     // Chuẩn bị ghi tin nhắn ra file
@@ -130,10 +130,10 @@ int main(int argc, char *argv[])
         }
 
         // Lấy thời gian hiện tại
-        time = getTimeString();
+        strcpy(time, getTimeString());
 
         // Nối chuỗi
-        snprintf(result, sizeof(result), "%s %s %s", clientIP, time, msg);
+        snprintf(result, sizeof(result), "%s %s%s", clientIP, time, msg);
 
         // Ghi ra file và in ra màn hình
         fprintf(f, "%s", result);
