@@ -31,17 +31,17 @@ int main()
 
     // Khai báo chuỗi cần tìm
     char *find = "0123456789";
-    int len = strlen(find) - 1; // Độ dài chuỗi đệm
-    char buf[265];              // 256 + 9
+    int len = strlen(find) - 1; // Độ dài chuỗi cần tìm
+    char buf[256 + len];        // 256 + 9 = 265
 
-    // Khởi tạo chuỗi đệm chứa dấu cách
+    // Khởi tạo chuỗi tạm thời chứa dấu cách
     memset(buf, 32, len);
 
     int count = 0;
 
     while (1)
     {
-        // Nhận dữ liệu mới vào vị trí sau chuỗi đệm
+        // Nhận dữ liệu mới vào vị trí sau chuỗi tạm thời
         int ret = recv(client, buf + len, sizeof(buf) - len, 0);
         if (ret <= 0)
             break;
@@ -54,7 +54,7 @@ int main()
             p = strstr(p + 1, find);
         }
 
-        // Cập nhật chuỗi đệm chứa các ký tự cuối của buffer hiện tại
+        // Cập nhật chuỗi tạm thời chứa các ký tự cuối của buffer hiện tại
         memcpy(buf, buf + ret, len);
     }
 

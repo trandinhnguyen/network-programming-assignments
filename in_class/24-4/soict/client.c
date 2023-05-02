@@ -20,7 +20,7 @@ int main()
         return 1;
     }
 
-    FILE *f = fopen("test.txt", "rb");
+    FILE *f = fopen("text.txt", "rb");
     char buf[256];
     while (!feof(f))
     {
