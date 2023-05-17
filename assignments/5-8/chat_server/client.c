@@ -6,6 +6,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
+#include <poll.h>
 
 #define BUFF_SIZE 256
 
@@ -24,24 +25,35 @@ int main()
         return 1;
     }
 
-    fd_set fdread;
+    /*
+    Cau truc pollfd: Tập hợp các mô tả cần đợi sự kiện
+        int fd: Mô tả (socket) cần thăm dò
+        short int events: Mặt nạ sự kiện cần kiểm tra.
+        short int revents: Mặt nạ sự kiện đã xảy ra.
+    */
+    struct pollfd fds[2];
     char buf[BUFF_SIZE];
+
+    fds[0].fd = STDIN_FILENO; // Describe of input device
+    fds[0].events = POLLIN;
+
+    fds[1].fd = client; // Descirbe of client socket
+    fds[1].events = POLLIN;
 
     while (1)
     {
-        // Xóa tập fdread (Xóa tất cả các socket đã được gắn vào)
-        FD_ZERO(&fdread);
-
-        // Gắn mô tả STDIN (bàn phím) vào tập fdread
-        FD_SET(STDIN_FILENO, &fdread);
-        // Gắn socket vào tập fdread
-        FD_SET(client, &fdread);
-
-        // Chờ đến khi sự kiện xảy ra với các mô tả đã được gắn vào fdread
-        int ret = select(client + 1, &fdread, NULL, NULL, NULL);
+        /*
+        Hàm poll: đợi trên 1 tập mô tả
+        cho đến khi các thao tác vào ra sẵn sàng.
+            struct pollfd *fds: Tập hợp các mô tả cần đợi sự kiện.
+            nfds_t nfds: Số lượng các mô tả, ko vượt quá RLIMIT_NOFILE
+            int timeout: Thời gian chờ (ms). -1 thì hàm chỉ trả về kết quả
+                khi có sự kiện xảy ra.
+        */
+        int ret = poll(fds, 2, -1);
 
         // Kiểm tra sự kiện có dữ liệu từ bàn phím
-        if (FD_ISSET(STDIN_FILENO, &fdread))
+        if (fds[0].revents & POLLIN)
         {
             fgets(buf, sizeof(buf), stdin);
             if (strncmp(buf, "exit", 4) == 0)
@@ -52,9 +64,12 @@ int main()
         }
 
         // Kiểm tra sự kiện có dữ liệu từ socket
-        if (FD_ISSET(client, &fdread))
+        if (fds[1].revents & POLLIN)
         {
             ret = recv(client, buf, sizeof(buf), 0);
+            if (ret <= 0)
+                break;
+
             buf[ret] = 0;
             printf("%s\n", buf);
         }
