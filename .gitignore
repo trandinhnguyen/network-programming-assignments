@@ -1,6 +1,8 @@
 **/[Tt]est*
 !test1.c
 
+*.dat
+
 # *.jpg
 # *.png
 # *.mp4

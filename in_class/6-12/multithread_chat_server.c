@@ -46,7 +46,6 @@ int main()
         {
             perror("accept() failed");
             continue;
-            ;
         }
         printf("New client connected: %d\n", client);
 
