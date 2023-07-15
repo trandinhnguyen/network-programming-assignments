@@ -79,7 +79,7 @@ int main()
             break;
         fwrite(buf, 1, len, f);
         downloaded += len;
-        printf("downloading: %d\n", downloaded);
+        // printf("downloading: %d\n", downloaded);
     }
 
     // Ket thuc, dong socket

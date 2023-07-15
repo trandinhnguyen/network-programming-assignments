@@ -3,10 +3,11 @@
 
 *.dat
 
-# *.jpg
-# *.png
-# *.mp4
+*.jpg
+*.png
+*.mp4
 *.zip
+*.mp3
 
 img/**/*.txt
 
