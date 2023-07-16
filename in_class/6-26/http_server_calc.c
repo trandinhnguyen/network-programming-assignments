@@ -9,6 +9,8 @@
 #include <sys/resource.h>
 
 void *thread_proc(void *arg);
+void make_result(char *buf, float a, float b, int cmd);
+void extract_string(char *p, float *a, float *b, int *cmd);
 
 int main()
 {
@@ -67,9 +69,11 @@ void *thread_proc(void *arg)
     puts(buf);
 
     // process request
+    // compare 2 strings without case sensitive
     if (strncasecmp(buf, "GET /calc", 9) == 0)
     {
         // extract query string
+        // search the character in the string
         char *pos1 = strchr(buf, '?') + 1;
         char *pos2 = strchr(pos1, ' ');
         int query_length = pos2 - pos1;
@@ -78,80 +82,12 @@ void *thread_proc(void *arg)
         query[query_length] = 0;
 
         // get parameter from query string
-        float a, b, result;
+        float a, b;
         int cmd;
 
         char *p = strtok(query, "&");
-        while (p != NULL)
-        {
-            if (strncmp(p, "a=", 2) == 0)
-            {
-                a = atof(p + 2);
-            }
-            else if (strncmp(p, "b=", 2) == 0)
-            {
-                b = atof(p + 2);
-            }
-            else if (strncmp(p, "cmd=", 4) == 0)
-            {
-                if (strcmp(p + 4, "add") == 0)
-                {
-                    cmd = 1;
-                }
-                else if (strcmp(p + 4, "sub") == 0)
-                {
-                    cmd = 2;
-                }
-                else if (strcmp(p + 4, "mul") == 0)
-                {
-                    cmd = 3;
-                }
-                if (strcmp(p + 4, "div") == 0)
-                {
-                    cmd = 4;
-                }
-            }
-            p = strtok(NULL, "&");
-        }
-
-        if (cmd == 1)
-        {
-            result = a + b;
-            sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
-                         "<html><body>%f+%f=%f</body></html>",
-                    a, b, result);
-        }
-        else if (cmd == 2)
-        {
-            result = a - b;
-            sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
-                         "<html><body>%f-%f=%f</body></html>",
-                    a, b, result);
-        }
-        else if (cmd == 3)
-        {
-            result = a * b;
-            sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
-                         "<html><body>%f*%f=%f</body></html>",
-                    a, b, result);
-        }
-        else if (cmd == 4)
-        {
-            if (b == 0)
-            {
-                sprintf(buf, "HTTP/1.1 200 OK\r\n"
-                             "Content-Type: text/html\r\n\r\n"
-                             "<html><body>Devide by zero.</body></html>");
-            }
-            else
-            {
-                result = a / b;
-                sprintf(buf, "HTTP/1.1 200 OK\r\n"
-                             "Content-Type: text/html\r\n\r\n"
-                             "<html><body>%f/%f=%f</body></html>",
-                        a, b, result);
-            }
-        }
+        extract_string(p, &a, &b, &cmd);
+        make_result(buf, a, b, cmd);
 
         // send result to client
         send(client, buf, strlen(buf), 0);
@@ -166,78 +102,100 @@ void *thread_proc(void *arg)
         body[body_length] = 0;
 
         // get parameter from query string
-        float a, b, result;
+        float a, b;
         int cmd;
 
         char *p = strtok(body, "&");
-        while (p != NULL)
-        {
-            if (strncmp(p, "a=", 2) == 0)
-            {
-                a = atof(p + 2);
-            }
-            else if (strncmp(p, "b=", 2) == 0)
-            {
-                b = atof(p + 2);
-            }
-            else if (strncmp(p, "cmd=", 4) == 0)
-            {
-                if (strcmp(p + 4, "add") == 0)
-                {
-                    cmd = 1;
-                }
-                else if (strcmp(p + 4, "sub") == 0)
-                {
-                    cmd = 2;
-                }
-                else if (strcmp(p + 4, "mul") == 0)
-                {
-                    cmd = 3;
-                }
-                if (strcmp(p + 4, "div") == 0)
-                {
-                    cmd = 4;
-                }
-            }
-            p = strtok(NULL, "&");
-        }
-
-        if (cmd == 1)
-        {
-            result = a + b;
-            sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>%f+%f=%f</body></html>", a, b, result);
-        }
-        else if (cmd == 2)
-        {
-            result = a - b;
-            sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>%f-%f=%f</body></html>", a, b, result);
-        }
-        else if (cmd == 3)
-        {
-            result = a * b;
-            sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>%f*%f=%f</body></html>", a, b, result);
-        }
-        else if (cmd == 4)
-        {
-            if (b == 0)
-            {
-                sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>Devide by zero.</body></html>");
-            }
-            else
-            {
-                result = a / b;
-                sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>%f/%f=%f</body></html>", a, b, result);
-            }
-        }
+        extract_string(p, &a, &b, &cmd);
+        make_result(buf, a, b, cmd);
 
         // send result to client
         send(client, buf, strlen(buf), 0);
-    }
-    else
-    {
     }
 
     close(client);
 
     printf("child thread finished.\n");
+}
+
+void extract_string(char *p, float *a, float *b, int *cmd)
+{
+    while (p != NULL)
+    {
+        if (strncmp(p, "a=", 2) == 0)
+        {
+            *a = atof(p + 2);
+        }
+        else if (strncmp(p, "b=", 2) == 0)
+        {
+            *b = atof(p + 2);
+        }
+        else if (strncmp(p, "cmd=", 4) == 0)
+        {
+            if (strcmp(p + 4, "add") == 0)
+            {
+                *cmd = 1;
+            }
+            else if (strcmp(p + 4, "sub") == 0)
+            {
+                *cmd = 2;
+            }
+            else if (strcmp(p + 4, "mul") == 0)
+            {
+                *cmd = 3;
+            }
+            if (strcmp(p + 4, "div") == 0)
+            {
+                *cmd = 4;
+            }
+        }
+        p = strtok(NULL, "&");
+    }
+}
+
+void make_result(char *buf, float a, float b, int cmd)
+{
+    float result;
+
+    if (cmd == 1)
+    {
+        result = a + b;
+        sprintf(buf, "HTTP/1.1 200 OK\r\n"
+                     "Content-Type: text/html\r\n\r\n"
+                     "<html><body>%f+%f=%f</body></html>",
+                a, b, result);
+    }
+    else if (cmd == 2)
+    {
+        result = a - b;
+        sprintf(buf, "HTTP/1.1 200 OK\r\n"
+                     "Content-Type: text/html\r\n\r\n"
+                     "<html><body>%f-%f=%f</body></html>",
+                a, b, result);
+    }
+    else if (cmd == 3)
+    {
+        result = a * b;
+        sprintf(buf, "HTTP/1.1 200 OK\r\n"
+                     "Content-Type: text/html\r\n\r\n"
+                     "<html><body>%f*%f=%f</body></html>",
+                a, b, result);
+    }
+    else if (cmd == 4)
+    {
+        if (b == 0)
+        {
+            sprintf(buf, "HTTP/1.1 200 OK\r\n"
+                         "Content-Type: text/html\r\n\r\n"
+                         "<html><body>Devide by zero.</body></html>");
+        }
+        else
+        {
+            result = a / b;
+            sprintf(buf, "HTTP/1.1 200 OK\r\n"
+                         "Content-Type: text/html\r\n\r\n"
+                         "<html><body>%f/%f=%f</body></html>",
+                    a, b, result);
+        }
+    }
 }
